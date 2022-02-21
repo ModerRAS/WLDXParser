@@ -1,6 +1,7 @@
 ﻿using AngleSharp;
 using AngleSharp.Html.Parser;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace WLDXParser
 {
@@ -12,38 +13,63 @@ namespace WLDXParser
         }
         static void Main(string[] args)
         {
-            var parser = new HtmlParser();
-            var document = parser.ParseDocument(File.ReadAllText(@"C:\WorkSpace\XML\继电保护高级技师\单选题第一组.xml"));
-            var list =  document.All.Where(m => m.ClassName == "android.widget.ListView");
-            foreach (var item in list)
+            var doc = new XmlDocument();
+            doc.Load(@"C:\WorkSpace\XML\继电保护高级技师\单选题第一组.xml");
+            //var document = parser.ParseDocument(File.ReadAllText(@"C:\WorkSpace\XML\继电保护高级技师\单选题第一组.xml"));
+            var root = doc.DocumentElement;
+            var nodes = root.SelectNodes("//node[@class=\"android.widget.ListView\"]");
+            foreach (XmlNode PerQuestion in nodes)
             {
-                var children = item.Children;
-                if (children.ToList().Count > 2)
+                //check is Per Question
+                if (PerQuestion.HasChildNodes && (
+                      PerQuestion.ChildNodes[0].HasChildNodes && 
+                      !string.IsNullOrWhiteSpace(PerQuestion.ChildNodes[0].ChildNodes[0].Attributes["text"].Value) ||
+                        !string.IsNullOrWhiteSpace(PerQuestion.ChildNodes[0].Attributes["text"].Value)
+                      )
+                    )
                 {
-                    Console.WriteLine(children[0].GetAttribute("text"));
-                    if (children[0].Children.ToList().Count > 0)
+                    foreach (XmlNode Content in PerQuestion.ChildNodes)
                     {
-                        if (children[0].Children[0].Children.ToList().Count > 0)
+                        var TitleAnswer = Content.Attributes["text"].Value.Trim();
+                        if (Content.HasChildNodes)
                         {
-                            foreach (var e in children[0].Children[0].Children.ToList())
+                            foreach (XmlNode e in Content.ChildNodes)
                             {
-                                Console.WriteLine(e.GetAttribute("text"));
+                                TitleAnswer += e.Attributes["text"].Value.Trim();
+                                TitleAnswer += " ";
+                                if (e.HasChildNodes)
+                                {
+                                    foreach (XmlNode f in e.ChildNodes)
+                                    {
+                                        TitleAnswer += f.Attributes["text"].Value.Trim();
+                                        TitleAnswer += " ";
+                                    }
+                                }
                             }
-                        } else
-                        {
-                            Console.WriteLine(children[0].Children[0].GetAttribute("text"));
                         }
-                        
+                        Console.WriteLine(TitleAnswer); 
                     }
                     
-                } else
-                {
-                    //Console.WriteLine(item.GetAttribute("text"));
-                }
-                
-            }
-            Console.WriteLine(list.ToList().Count);
 
+                    var TrueAnswer = "";
+                    foreach (XmlNode e in PerQuestion.ParentNode.ChildNodes)
+                    {
+                        TrueAnswer += e.Attributes["text"].Value;
+                    }
+                    
+
+                    //Console.WriteLine(title);
+                    Console.WriteLine();
+                    Console.WriteLine(TrueAnswer);
+                    Console.WriteLine();
+                    Console.WriteLine();
+                }
+                //Console.WriteLine(node.ChildNodes.Attributes["text"].Value);
+                //Console.WriteLine();
+                //var titles = node.SelectNodes("/node[@index=\"0\"]");
+                //if (titles.Count > 0)
+                //Console.WriteLine(titles[0].InnerText);
+            }
         }
     }
 }

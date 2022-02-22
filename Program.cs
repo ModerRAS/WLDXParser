@@ -3,26 +3,18 @@ using AngleSharp.Html.Parser;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace WLDXParser
-{
-    class Program
-    {
-        static string NomoralRegex(string input)
-        {
+namespace WLDXParser {
+    class Program {
+        static string NomoralRegex(string input) {
             return input.Replace("\n", "").Replace(" ", "").Trim();
         }
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
             string[] BasicPaths = { @"C:\WorkSpace\XML\继电保护高级技师\", @"C:\WorkSpace\XML\继电保护基础知识" };
-            foreach (var BasicPath in BasicPaths)
-            {
-                using (StreamWriter sw = new StreamWriter(Path.Combine(BasicPath, "输出.txt")))
-                {
+            foreach (var BasicPath in BasicPaths) {
+                using (StreamWriter sw = new StreamWriter(Path.Combine(BasicPath, "输出.txt"))) {
                     var QuestionNumber = 0;
-                    foreach (var file in Directory.GetFiles(BasicPath))
-                    {
-                        if (file.EndsWith("txt"))
-                        {
+                    foreach (var file in Directory.GetFiles(BasicPath)) {
+                        if (file.EndsWith("txt")) {
                             continue;
                         }
                         var doc = new XmlDocument();
@@ -30,32 +22,25 @@ namespace WLDXParser
                         //var document = parser.ParseDocument(File.ReadAllText(@"C:\WorkSpace\XML\继电保护高级技师\单选题第一组.xml"));
                         var root = doc.DocumentElement;
                         var nodes = root.SelectNodes("//node[@class=\"android.widget.ListView\"]");
-                        foreach (XmlNode PerQuestion in nodes)
-                        {
+                        foreach (XmlNode PerQuestion in nodes) {
                             //check is Per Question
                             if (PerQuestion.HasChildNodes && (
                                   PerQuestion.ChildNodes[0].HasChildNodes &&
                                   !string.IsNullOrWhiteSpace(PerQuestion.ChildNodes[0].ChildNodes[0].Attributes["text"].Value) ||
                                     !string.IsNullOrWhiteSpace(PerQuestion.ChildNodes[0].Attributes["text"].Value)
                                   )
-                                )
-                            {
+                                ) {
                                 QuestionNumber++;
                                 sw.Write(QuestionNumber.ToString());
                                 sw.Write(". ");
-                                foreach (XmlNode Content in PerQuestion.ChildNodes)
-                                {
+                                foreach (XmlNode Content in PerQuestion.ChildNodes) {
                                     var TitleAnswer = Content.Attributes["text"].Value.Trim();
-                                    if (Content.HasChildNodes)
-                                    {
-                                        foreach (XmlNode e in Content.ChildNodes)
-                                        {
+                                    if (Content.HasChildNodes) {
+                                        foreach (XmlNode e in Content.ChildNodes) {
                                             TitleAnswer += e.Attributes["text"].Value.Trim();
                                             TitleAnswer += " ";
-                                            if (e.HasChildNodes)
-                                            {
-                                                foreach (XmlNode f in e.ChildNodes)
-                                                {
+                                            if (e.HasChildNodes) {
+                                                foreach (XmlNode f in e.ChildNodes) {
                                                     TitleAnswer += f.Attributes["text"].Value.Trim();
                                                     TitleAnswer += " ";
                                                 }
@@ -68,8 +53,7 @@ namespace WLDXParser
 
 
                                 var TrueAnswer = "";
-                                foreach (XmlNode e in PerQuestion.ParentNode.ChildNodes)
-                                {
+                                foreach (XmlNode e in PerQuestion.ParentNode.ChildNodes) {
                                     TrueAnswer += e.Attributes["text"].Value;
                                 }
 
@@ -92,11 +76,11 @@ namespace WLDXParser
 
                     }
                 }
-                
-            }
-            
 
-            
+            }
+
+
+
         }
     }
 }
